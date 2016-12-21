@@ -40,6 +40,8 @@ build do
   update_config_guess(target: "build-aux")
   update_config_guess(target: "libcharset/build-aux")
 
+  config_command = [ "--disable-dependency-tracking" ]
+
   if aix?
     patch_env = env.dup
     patch_env["PATH"] = "/opt/freeware/bin:#{env['PATH']}"
@@ -52,7 +54,13 @@ build do
     patch source: "v1.14.ppc64le-ldemulation.patch", plevel: 1, env: env
   end
 
-  configure(env: env)
+  if windows?
+    env["LANG"] = "C"
+    config_command << "--disable-static"
+    config_command << "--disable-nls" # Is this really needed - can't we vendor libintl?
+  end
+
+  configure(*config_command, env: env)
 
   pmake = "-j #{workers}"
   make "#{pmake}", env: env
