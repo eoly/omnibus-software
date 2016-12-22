@@ -69,7 +69,7 @@ build do
       dlls << "libgcc_s_seh-1"
     end
     dlls.each do |dll|
-      mingw = ENV["MSYSTEM"].downcase
+      mingw = windows_arch_i386? ? "mingw32" : "mingw64"
       msys_path = ENV["OMNIBUS_TOOLCHAIN_INSTALL_DIR"] ? "#{ENV["OMNIBUS_TOOLCHAIN_INSTALL_DIR"]}/embedded/bin" : "C:/msys2"
       windows_path = "#{msys_path}/#{mingw}/bin/#{dll}.dll"
       if File.exist?(windows_path)
