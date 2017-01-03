@@ -14,18 +14,6 @@
 # limitations under the License.
 #
 
-# NOTE: you will most likely want to enable openssl fips in your project file like:
-#
-# override :fips, enabled: true
-#
-# Also, due to linking difficulty, you can't have openssl fips enabled in a project
-# you also want openssl non-fips, so making a separate project to wrap stunnel is
-# likely needed.
-
-# NOTE: FIPS defaults to on, since that makes the most sense for stunnel,
-# compared to other software definitions where it defaults to off.
-fips_enabled = (project.overrides[:fips] && project.overrides[:fips][:enabled]) || true
-
 name "stunnel"
 default_version "5.38"
 
@@ -45,11 +33,13 @@ end
 
 build do
   env = with_standard_compiler_flags(with_embedded_path)
-  configure_string = "./configure --with-ssl=#{install_dir}/embedded --prefix=#{install_dir}/embedded"
-  if fips_enabled
-    configure_string += " --enable-fips"
-  end
-  command configure_string, env: env
+  configure_args = [
+    "--with-ssl=#{install_dir}/embedded",
+    "--prefix=#{install_dir}/embedded",
+  ]
+  configure_args << "--enable-fips" if fips_mode?
+
+  configure(*configure_args, env: env)
   make env: env
   make "install", env: env
 end
